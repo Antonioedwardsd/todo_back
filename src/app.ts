@@ -1,5 +1,6 @@
 import express from "express";
 import sequelize from "./utils/database";
+import Task from "./models/task";
 import taskRoutes from "./routes/taskRoutes";
 import { errorHandler } from "./middlewares/errorHandler";
 import { auth } from "express-openid-connect";
@@ -8,7 +9,7 @@ const app = express();
 
 const config = {
 	authRequired: false,
-	authLogout: true,
+	auth0Logout: true,
 	secret:
 		process.env.AUTH_SECRET || "a_long_randomly_generated_string_stored_in_env",
 	baseURL: "http://localhost:3000",
@@ -29,8 +30,10 @@ const PORT = 3000;
 
 sequelize
 	.authenticate()
-	.then(() => {
+	.then(async () => {
 		console.log("Database connected successfully");
+
+		await Task.sync({ alter: true });
 		app.listen(PORT, () => {
 			console.log(`Server running on http://localhost:${PORT}`);
 		});

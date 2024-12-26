@@ -11,20 +11,28 @@ Task.init(
 			primaryKey: true,
 		},
 		title: {
-			type: DataTypes.STRING,
+			type: DataTypes.STRING(255),
 			allowNull: false,
 		},
 		description: {
-			type: DataTypes.STRING,
+			type: DataTypes.STRING(1024),
+			allowNull: true,
 		},
 		completed: {
 			type: DataTypes.BOOLEAN,
 			defaultValue: false,
 		},
+		status: {
+			type: DataTypes.ENUM("pending", "in-progress", "completed"),
+			allowNull: false,
+			defaultValue: "pending",
+		},
 	},
 	{
 		sequelize,
 		modelName: "Task",
+		tableName: "tasks",
+		timestamps: true,
 	}
 );
 
