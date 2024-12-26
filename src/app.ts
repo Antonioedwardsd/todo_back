@@ -2,19 +2,29 @@ import express from "express";
 import sequelize from "./utils/database";
 import taskRoutes from "./routes/taskRoutes";
 import { errorHandler } from "./middlewares/errorHandler";
+import { auth } from "express-openid-connect";
 
 const app = express();
 
+const config = {
+	authRequired: false,
+	authLogout: true,
+	secret:
+		process.env.AUTH_SECRET || "a_long_randomly_generated_string_stored_in_env",
+	baseURL: "http://localhost:3000",
+	clientID: "XgKTPvpKb06BkkADcGnd9E5M8fctMigK",
+	issuerBaseURL: "https://dev-1y8kfge7r5g4gzlc.us.auth0.com",
+};
+
 app.use(express.json());
+app.use(auth(config));
 app.use(taskRoutes);
 app.use(errorHandler);
 
-// Rutas
 app.get("/", (req, res) => {
 	res.status(200).json({ message: "Welcome to To-Do Backend!" });
 });
 
-// Sincronización con la base de datos y arranque del servidor
 const PORT = 3000;
 
 sequelize
