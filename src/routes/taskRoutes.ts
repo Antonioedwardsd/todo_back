@@ -3,6 +3,7 @@ import { requiresAuth } from "express-openid-connect";
 import {
 	createTaskController,
 	getAllTasksController,
+	getTaskByIdController,
 	updateTaskController,
 	deleteTaskController,
 } from "../controllers/taskController";
@@ -18,6 +19,7 @@ router.get("/api/protected", requiresAuth(), (req, res) => {
 
 router.post("/api/todos", requiresAuth(), createTaskController);
 router.get("/api/todos", requiresAuth(), getAllTasksController);
+router.get("/api/todos/:id", requiresAuth(), getTaskByIdController);
 router.put("/api/todos/:id", requiresAuth(), updateTaskController);
 router.delete("/api/todos/:id", requiresAuth(), deleteTaskController);
 
