@@ -1,15 +1,33 @@
 import request from "supertest";
 import app from "../src/app";
+import Task from "../src/models/task";
+
+let testTaskId: string;
+
+beforeAll(async () => {
+	// Limpia la base de datos antes de crear datos de prueba
+	await Task.destroy({ where: {} });
+
+	// Crea una tarea de prueba
+	const task = await Task.create({
+		title: "Test Task",
+		description: "Test description",
+		completed: false,
+		status: "pending",
+	});
+	testTaskId = task.id; // Guarda el ID generado para usarlo en las pruebas
+});
+
+// Objeto global para las pruebas de creación
+const newTask = {
+	title: "New Test Task",
+	description: "New Test description",
+	completed: false,
+	status: "pending", // Usa valores válidos según el esquema
+};
 
 describe("Todos API", () => {
 	it("should create a new task with valid data", async () => {
-		const newTask = {
-			title: "Test Task",
-			description: "Test description",
-			completed: false,
-			status: "pending",
-		};
-
 		const response = await request(app).post("/api/todos").send(newTask);
 
 		expect(response.statusCode).toBe(201);
@@ -33,18 +51,16 @@ describe("Todos API", () => {
 	});
 
 	it("should retrieve a specific task by ID", async () => {
-		const testTaskId = "12345"; // Reemplaza esto con un ID válido para la prueba
-		const response = await request(app).get(`/api/todos/${testTaskId}`);
+		const response = await request(app).get(`/api/todos/${testTaskId}`); // Usa testTaskId
 		expect(response.statusCode).toBe(200);
 		expect(response.body).toHaveProperty("id", testTaskId);
 	});
 
 	it("should update a task by ID", async () => {
-		const testTaskId = "12345"; // Reemplaza esto con un ID válido para la prueba
 		const updates = { title: "Updated Task" };
 
 		const response = await request(app)
-			.put(`/api/todos/${testTaskId}`)
+			.put(`/api/todos/${testTaskId}`) // Usa testTaskId
 			.send(updates);
 
 		expect(response.statusCode).toBe(200);
@@ -52,9 +68,7 @@ describe("Todos API", () => {
 	});
 
 	it("should delete a task by ID", async () => {
-		const testTaskId = "12345"; // Reemplaza esto con un ID válido para la prueba
-
-		const response = await request(app).delete(`/api/todos/${testTaskId}`);
+		const response = await request(app).delete(`/api/todos/${testTaskId}`); // Usa testTaskId
 		expect(response.statusCode).toBe(200);
 		expect(response.body).toHaveProperty(
 			"message",

@@ -7,7 +7,7 @@ const taskSchema = z.object({
 	description: z.string().optional(),
 	completed: z.boolean().optional().default(false),
 	status: z
-		.enum(["pending", "in-progress", "done"])
+		.enum(["pending", "in-progress", "completed"])
 		.optional()
 		.default("pending"),
 });
