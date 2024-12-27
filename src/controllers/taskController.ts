@@ -1,27 +1,19 @@
 import { Request, Response } from "express";
-import { z } from "zod";
-import Task from "../models/task";
-
-const taskSchema = z.object({
-	title: z.string().min(1, "Title is required"),
-	description: z.string().optional(),
-	completed: z.boolean().optional().default(false),
-	status: z
-		.enum(["pending", "in-progress", "completed"])
-		.optional()
-		.default("pending"),
-});
+import Task from "../models/taskModel";
+import {
+	createTaskSchema,
+	updateTaskSchema,
+} from "../validators/taskValidator";
 
 export const createTaskController = async (req: Request, res: Response) => {
 	try {
 		console.log("Request Body:", req.body);
-		const validatedData = taskSchema.parse(req.body);
-		console.log("Validated Data:", validatedData);
+		const validatedData = createTaskSchema.parse(req.body);
 		const task = await Task.create(validatedData);
 		res.status(201).json(task);
 	} catch (error) {
 		console.error("Error in createTaskController:", error);
-		if (error instanceof z.ZodError) {
+		if (error instanceof Error) {
 			res.status(400).json({ error: error.message });
 		} else {
 			res.status(400).json({ error: "An unexpected error occurred." });
@@ -34,11 +26,7 @@ export const getAllTasksController = async (req: Request, res: Response) => {
 		const tasks = await Task.findAll();
 		res.status(200).json(tasks);
 	} catch (error) {
-		if (error instanceof z.ZodError) {
-			res.status(500).json({ error: error.message });
-		} else {
-			res.status(500).json({ error: "An unexpected error occurred." });
-		}
+		res.status(500).json({ error: "An unexpected error occurred." });
 	}
 };
 
@@ -52,18 +40,14 @@ export const getTaskByIdController = async (req: Request, res: Response) => {
 		}
 		res.status(200).json(task);
 	} catch (error) {
-		if (error instanceof z.ZodError) {
-			res.status(500).json({ error: error.message });
-		} else {
-			res.status(500).json({ error: "An unexpected error occurred." });
-		}
+		res.status(500).json({ error: "An unexpected error occurred." });
 	}
 };
 
 export const updateTaskController = async (req: Request, res: Response) => {
 	try {
 		const { id } = req.params;
-		const validatedData = taskSchema.partial().parse(req.body);
+		const validatedData = updateTaskSchema.parse(req.body);
 		const task = await Task.findByPk(id);
 		if (!task) {
 			res.status(404).json({ error: "Task not found" });
@@ -91,10 +75,6 @@ export const deleteTaskController = async (req: Request, res: Response) => {
 		await task.destroy();
 		res.status(200).json({ message: "Task deleted successfully" });
 	} catch (error) {
-		if (error instanceof Error) {
-			res.status(500).json({ error: error.message });
-		} else {
-			res.status(500).json({ error: "An unexpected error occurred." });
-		}
+		res.status(500).json({ error: "An unexpected error occurred." });
 	}
 };

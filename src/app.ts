@@ -1,17 +1,23 @@
+import dotenv from "dotenv";
+dotenv.config({
+	path: process.env.NODE_ENV === "test" ? "./test.env" : "./.env",
+});
+
+console.log("NODE_ENV desde app.ts:", process.env.NODE_ENV);
+console.log("BASE_URL desde app.ts:", process.env.BASE_URL);
+
 import express from "express";
 import sequelize from "./utils/database";
-import Task from "./models/task";
+import Task from "./models/taskModel";
 import taskRoutes from "./routes/taskRoutes";
 import { errorHandler } from "./middlewares/errorHandler";
 
 const app = express();
 
-// Middleware global
 app.use(express.json());
 app.use(taskRoutes);
 app.use(errorHandler);
 
-// Configuración para autenticación
 const configureAuth = (app: express.Application) => {
 	if (process.env.NODE_ENV !== "test") {
 		const { auth } = require("express-openid-connect");
@@ -24,7 +30,7 @@ const configureAuth = (app: express.Application) => {
 			secret:
 				process.env.AUTH_SECRET ||
 				"a_long_randomly_generated_string_stored_in_env",
-			baseURL: "http://localhost:3000",
+			baseURL: process.env.BASE_URL || "http://localhost:3000",
 			clientID: "XgKTPvpKb06BkkADcGnd9E5M8fctMigK",
 			issuerBaseURL: "https://dev-ly8kfge7r5g4gzlc.us.auth0.com",
 			audience: "https://todoapi.example.com",
@@ -53,10 +59,8 @@ const configureAuth = (app: express.Application) => {
 	}
 };
 
-// Configurar autenticación
 configureAuth(app);
 
-// Endpoint raíz
 app.get("/", (req, res) => {
 	res.status(200).json({ message: "Welcome to To-Do Backend!" });
 });
