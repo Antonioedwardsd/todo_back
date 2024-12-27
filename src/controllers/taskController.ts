@@ -5,8 +5,11 @@ import Task from "../models/task";
 const taskSchema = z.object({
 	title: z.string().min(1, "Title is required"),
 	description: z.string().optional(),
-	completed: z.boolean().optional(),
-	status: z.enum(["pending", "in-progress", "done"]).optional(),
+	completed: z.boolean().optional().default(false),
+	status: z
+		.enum(["pending", "in-progress", "done"])
+		.optional()
+		.default("pending"),
 });
 
 export const createTaskController = async (req: Request, res: Response) => {
