@@ -14,10 +14,13 @@ const taskSchema = z.object({
 
 export const createTaskController = async (req: Request, res: Response) => {
 	try {
+		console.log("Request Body:", req.body);
 		const validatedData = taskSchema.parse(req.body);
+		console.log("Validated Data:", validatedData);
 		const task = await Task.create(validatedData);
 		res.status(201).json(task);
 	} catch (error) {
+		console.error("Error in createTaskController:", error);
 		if (error instanceof z.ZodError) {
 			res.status(400).json({ error: error.message });
 		} else {

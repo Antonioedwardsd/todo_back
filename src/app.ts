@@ -6,50 +6,55 @@ import { errorHandler } from "./middlewares/errorHandler";
 
 const app = express();
 
-// Configuración para autenticación
-if (process.env.NODE_ENV !== "test") {
-	const { auth } = require("express-openid-connect");
-	const jwt = require("express-jwt");
-	const jwksRsa = require("jwks-rsa");
-
-	const config = {
-		authRequired: false,
-		auth0Logout: true,
-		secret:
-			process.env.AUTH_SECRET ||
-			"a_long_randomly_generated_string_stored_in_env",
-		baseURL: "http://localhost:3000",
-		clientID: "XgKTPvpKb06BkkADcGnd9E5M8fctMigK",
-		issuerBaseURL: "https://dev-ly8kfge7r5g4gzlc.us.auth0.com",
-		audience: "https://todoapi.example.com",
-	};
-
-	const checkJwt = jwt({
-		secret: jwksRsa.expressJwtSecret({
-			cache: true,
-			rateLimit: true,
-			jwksRequestsPerMinute: 5,
-			jwksUri:
-				"https://dev-ly8kfge7r5g4gzlc.us.auth0.com/.well-known/jwks.json",
-		}),
-		audience: "https://todoapi.example.com",
-		issuer: "https://dev-ly8kfge7r5g4gzlc.us.auth0.com/",
-		algorithms: ["RS256"],
-	});
-
-	app.use(auth(config));
-	app.get("/api/protected", checkJwt, (req, res) => {
-		res.status(200).json({
-			message: "You are authenticated!",
-			user: req.auth,
-		});
-	});
-}
-
-// Middleware
+// Middleware global
 app.use(express.json());
 app.use(taskRoutes);
 app.use(errorHandler);
+
+// Configuración para autenticación
+const configureAuth = (app: express.Application) => {
+	if (process.env.NODE_ENV !== "test") {
+		const { auth } = require("express-openid-connect");
+		const jwt = require("express-jwt");
+		const jwksRsa = require("jwks-rsa");
+
+		const config = {
+			authRequired: false,
+			auth0Logout: true,
+			secret:
+				process.env.AUTH_SECRET ||
+				"a_long_randomly_generated_string_stored_in_env",
+			baseURL: "http://localhost:3000",
+			clientID: "XgKTPvpKb06BkkADcGnd9E5M8fctMigK",
+			issuerBaseURL: "https://dev-ly8kfge7r5g4gzlc.us.auth0.com",
+			audience: "https://todoapi.example.com",
+		};
+
+		const checkJwt = jwt({
+			secret: jwksRsa.expressJwtSecret({
+				cache: true,
+				rateLimit: true,
+				jwksRequestsPerMinute: 5,
+				jwksUri:
+					"https://dev-ly8kfge7r5g4gzlc.us.auth0.com/.well-known/jwks.json",
+			}),
+			audience: "https://todoapi.example.com",
+			issuer: "https://dev-ly8kfge7r5g4gzlc.us.auth0.com/",
+			algorithms: ["RS256"],
+		});
+
+		app.use(auth(config));
+		app.get("/api/protected", checkJwt, (req, res) => {
+			res.status(200).json({
+				message: "You are authenticated!",
+				user: req.auth,
+			});
+		});
+	}
+};
+
+// Configurar autenticación
+configureAuth(app);
 
 // Endpoint raíz
 app.get("/", (req, res) => {
